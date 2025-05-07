@@ -10,47 +10,53 @@ interface ChatSideBarProps {
 }
 
 export default function ChatSideBar({
-    user,
-    show,
-    onClose,
-  }: Readonly<ChatSideBarProps>) {
-    const channelPreviewCustom = useCallback(
-      (props: ChannelPreviewUIComponentProps) => (
-        <ChannelPreviewMessenger
-          {...props}
-          onSelect={() => {
-            props.setActiveChannel?.(props.channel, props.watchers);
-            onClose();
-          }}
-        />
-      ),
-      [onClose]
-    );
-  
-    return (
-      <div className={`w-full flex-col md:max-w-xs ${show ? "flex" : "hidden"} bg-black border-r border-green-800`}>
-        <MenuBar />
-        <ChannelList
-          filters={{
-            type: "messaging",
-            members: { $in: [user.id] },
-          }}
-          sort={{ last_message_at: -1 }}
-          options={{ state: true, presence: true, limit: 10, watch: true }}
-          showChannelSearch
-          additionalChannelSearchProps={{
-            searchForChannels: true,
-            searchQueryParams: {
-              channelFilters: {
-                filters: {
-                  members: { $in: [user.id] },
-                },
+  user,
+  show,
+  onClose,
+}: Readonly<ChatSideBarProps>) {
+  const channelPreviewCustom = useCallback(
+    (props: ChannelPreviewUIComponentProps) => (
+      <ChannelPreviewMessenger
+        {...props}
+        className="hover:bg-green-100 transition"
+        onSelect={() => {
+          props.setActiveChannel?.(props.channel, props.watchers);
+          onClose();
+        }}
+      />
+    ),
+    [onClose]
+  );
+
+  return (
+    <div className={`w-full flex-col md:max-w-xs ${show ? "flex" : "hidden"} bg-white border-r border-green-200`}>
+      {/* Logo header */}
+      <div className="flex items-center gap-2 p-4 border-b border-green-100">
+        <img src="/logo.png" alt="Anchatty Logo" className="w-36 h-auto" />
+      </div>
+
+      <MenuBar />
+
+      <ChannelList
+        filters={{
+          type: "messaging",
+          members: { $in: [user.id] },
+        }}
+        sort={{ last_message_at: -1 }}
+        options={{ state: true, presence: true, limit: 10, watch: true }}
+        showChannelSearch
+        additionalChannelSearchProps={{
+          searchForChannels: true,
+          searchQueryParams: {
+            channelFilters: {
+              filters: {
+                members: { $in: [user.id] },
               },
             },
-          }}
-          Preview={channelPreviewCustom}
-        />
-      </div>
-    );
-  }
-  
+          },
+        }}
+        Preview={channelPreviewCustom}
+      />
+    </div>
+  );
+}
