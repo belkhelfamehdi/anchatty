@@ -1,10 +1,46 @@
 @import "tailwindcss";
-
 @import "stream-chat-react/dist/css/v2/index.css";
 
-.str-chat {
-    --str-chat__primary-color: theme('colors.blue.500');
-    --str-chat__active-primary-color: theme('colors.blue.600');
-    --str-chat__disabled-color: theme('colors.gray.200');
-    --str-chat__cta-button-border-radius: theme('borderRadius.DEFAULT');
+/* ----------------------------------------
+   🌟 Anchatty Tailwind-Based Custom Styles
+----------------------------------------- */
+
+
+
+/* 🔄 Animations (custom utilities via @keyframes) */
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 8px limegreen;
+  }
+  50% {
+    box-shadow: 0 0 16px limegreen;
+  }
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+.animate-fade-in {
+  animation: fadeIn 1s ease-out forwards;
+}
+.animate-slide-up {
+  animation: slideUp 0.8s ease-out forwards;
 }
