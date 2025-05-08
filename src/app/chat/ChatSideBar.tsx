@@ -1,7 +1,8 @@
 import { ChannelList, ChannelPreviewMessenger, ChannelPreviewUIComponentProps } from "stream-chat-react";
 import MenuBar from "./MenuBar";
 import { UserResource } from "@clerk/types";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
+import UsersMenu from "./UsersMenu";
 
 interface ChatSideBarProps {
   user: UserResource;
@@ -14,6 +15,14 @@ export default function ChatSideBar({
   show,
   onClose,
 }: Readonly<ChatSideBarProps>) {
+const [usersMenuOpen, setusersMenuOpen] = useState(false);
+
+useEffect(() => {
+  if (!show) {
+    setusersMenuOpen(false);
+  }
+}, [show]);
+
   const channelPreviewCustom = useCallback(
     (props: ChannelPreviewUIComponentProps) => (
       <ChannelPreviewMessenger
@@ -29,13 +38,16 @@ export default function ChatSideBar({
   );
 
   return (
-    <div className={`w-full flex-col md:max-w-xs ${show ? "flex" : "hidden"} bg-white border-r border-green-200`}>
+    <div className={`relative w-full flex-col md:max-w-xs ${show ? "flex" : "hidden"} bg-white border-r border-green-200`}>
+      {usersMenuOpen && 
+        <UsersMenu loggedInUser={user} onClose={() => setusersMenuOpen(false)} onChannelSelected={() => {setusersMenuOpen(false); onClose();}} />
+      }
       {/* Logo header */}
       <div className="flex items-center gap-2 p-4 border-b border-green-100">
         <img src="/logo.png" alt="Anchatty Logo" className="w-36 h-auto" />
       </div>
 
-      <MenuBar />
+      <MenuBar onUserMenuClick={() => setusersMenuOpen(true)} />
 
       <ChannelList
         filters={{
