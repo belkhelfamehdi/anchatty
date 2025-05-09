@@ -33,21 +33,23 @@ export default function UsersMenu({loggedInUser, onClose, onChannelSelected}: Re
             setHasNoMoreUsers(undefined);
 
             try {
-                const response = await client.queryUsers({
-                    id: {$ne: loggedInUser.id},
-                    ...(searchInput ? {
-                        $or: [{
-                            name: {$autocomplete: searchInput},
-                        }, {
-                            id: {$autocomplete: searchInput},
-                        }]
-                    } : {}),
-                },
-                {id: 1},
-                {limit: pageSize +1, }
-            )
-                setUsers(response.users.slice(0, pageSize));
-                setHasNoMoreUsers(response.users.length <= pageSize);
+const response = await client.queryUsers(
+  searchInput
+    ? {
+        $or: [
+          { name: { $autocomplete: searchInput } },
+          { id: { $autocomplete: searchInput } },
+        ],
+      }
+    : {},
+  { id: 1 },
+  { limit: pageSize + 1 }
+);
+
+const filtered = response.users.filter((u) => u.id !== loggedInUser.id);
+setUsers(filtered.slice(0, pageSize));
+setHasNoMoreUsers(filtered.length <= pageSize);
+
             }catch (error) {
                 console.error("Error loading initial users: ", error);
             }
