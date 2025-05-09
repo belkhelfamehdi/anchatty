@@ -20,14 +20,28 @@ export default function UsersMenu({loggedInUser, onClose, onChannelSelected}: Re
     const [moreUsersLoading, setMoreUsersLoading] = useState(false);
     const [hasNoMoreUsers, setHasNoMoreUsers] = useState<boolean>();
 
+    const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+
+    const [searchInput, setSearchInput] = useState("");
+
     const pageSize = 10;
 
     useEffect(() => {
         async function loadInitialUsers(){
 
+            setUsers(undefined);
+            setHasNoMoreUsers(undefined);
+
             try {
                 const response = await client.queryUsers({
-                    id: {$ne: loggedInUser.id},
+                    id: {$nin: [loggedInUser.id]},
+                    ...(searchInput ? {
+                        $or: [{
+                            name: {$autocomplete: searchInput},
+                        }, {
+                            id: {$autocomplete: searchInput},
+                        }]
+                    } : {}),
                 },
                 {id: 1},
                 {limit: pageSize +1, }
@@ -47,7 +61,16 @@ export default function UsersMenu({loggedInUser, onClose, onChannelSelected}: Re
         setMoreUsersLoading(true);
         try {
             const response = await client.queryUsers({
-                id: {$ne: loggedInUser.id},
+                $and: [
+                    {id: {$in: users?.map(user => user.id).filter(id => id !== loggedInUser.id) || []}},
+                    searchInput ? {
+                        $or: [{
+                            name: {$autocomplete: searchInput},
+                        }, {
+                            id: {$autocomplete: searchInput},
+                        }]
+                    }: {},
+                ],
             },
             {id: 1},
             {limit: pageSize +1, offset: users?.length}
@@ -80,14 +103,18 @@ export default function UsersMenu({loggedInUser, onClose, onChannelSelected}: Re
 
     return (
         <div className="str-chat bg-white absolute z-10 h-full w-full border-e border-e-[#DBDDE1]">
-            <div className="flex items-center gap-3 p-3 text-lg font-bold">
+            <div className="flex flex-col p-3">
+            <div className="mb-3 flex items-center gap-3 p-3 text-lg font-bold">
                 <ArrowLeft onClick={onClose} className="cursor-pointer" /> Users
             </div>
+            <input type="search" placeholder="Search" className="rounded-full border border-gray-300 px-4 py-2" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
+            </div>
             <div className="px-3 py-2 text-sm text-gray-500">
-            {!users ? <LoadingUsers className="w-full h-full" /> : null}
+            {!users ? <LoadingUsers /> : null}
             {users?.map((user) => (
-                <UserResult key={user.id} user={user} onUserClicked={startChatWithUser} key={user.id} />
+                <UserResult user={user} onUserClicked={startChatWithUser} key={user.id} selected={selectedUsers.includes(user.id)} onChangeSelected={(selected) => setSelectedUsers(selected ? [...selectedUsers, user.id] : selectedUsers.filter(userId => userId !== user.id))} />
             ))}
+            {JSON.stringify(selectedUsers)}
             {hasNoMoreUsers === false && (
                 <LoadingButton loading={hasNoMoreUsers}
                 onClick={loadMoreUsers}
@@ -101,13 +128,16 @@ export default function UsersMenu({loggedInUser, onClose, onChannelSelected}: Re
 }
 
 interface UserResult {
-    user: UserResponse & {image?: string}[];
+    user: UserResponse & {image?: string};
     onUserClicked: (userId: string) => void;
+    selected?: boolean;
+    onChangeSelected?: (selected: boolean) => void;
 }
 
-function UserResult({user, onUserClicked}: Readonly<UserResult>) {
+function UserResult({user, onUserClicked, selected, onChangeSelected}: Readonly<UserResult>) {
     return (
         <button className="mb-3 w-full flex items-center p-2 gap-2 hover:bg-green-100 transition" onClick={() => onUserClicked(user.id)}>
+            <input type="checkbox" className="mx-1 scale-125" checked={selected} onChange={(e) => onChangeSelected?.(e.target.checked)} onClick={(e) => e.stopPropagation} />
             <span><Avatar image={user.image} name={user.name || user.id} /></span>
             <span className="whitespace-nowrap overflow-hidden text-ellipsis ">{user.name || user.id}</span>
             {user.online && <span className="w-2 h-2 bg-green-500 rounded-full" />}
