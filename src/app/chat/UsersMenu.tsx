@@ -34,7 +34,7 @@ export default function UsersMenu({loggedInUser, onClose, onChannelSelected}: Re
 
             try {
                 const response = await client.queryUsers({
-                    id: {$nin: [loggedInUser.id]},
+                    id: {$ne: loggedInUser.id},
                     ...(searchInput ? {
                         $or: [{
                             name: {$autocomplete: searchInput},
@@ -62,7 +62,7 @@ export default function UsersMenu({loggedInUser, onClose, onChannelSelected}: Re
         try {
             const response = await client.queryUsers({
                 $and: [
-                    {id: {$in: users?.map(user => user.id).filter(id => id !== loggedInUser.id) || []}},
+                    {id: {$ne: loggedInUser.id}},
                     searchInput ? {
                         $or: [{
                             name: {$autocomplete: searchInput},
@@ -114,7 +114,6 @@ export default function UsersMenu({loggedInUser, onClose, onChannelSelected}: Re
             {users?.map((user) => (
                 <UserResult user={user} onUserClicked={startChatWithUser} key={user.id} selected={selectedUsers.includes(user.id)} onChangeSelected={(selected) => setSelectedUsers(selected ? [...selectedUsers, user.id] : selectedUsers.filter(userId => userId !== user.id))} />
             ))}
-            {JSON.stringify(selectedUsers)}
             {hasNoMoreUsers === false && (
                 <LoadingButton loading={hasNoMoreUsers}
                 onClick={loadMoreUsers}
