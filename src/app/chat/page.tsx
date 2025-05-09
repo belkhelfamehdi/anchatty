@@ -59,7 +59,6 @@ export default function ChatPage() {
             />
             <ChatChannel
               show={isLargeScreen || !chatSideBarOpen}
-              hideChannelOnThread={!isLargeScreen}
             />
           </div>
         </Chat>

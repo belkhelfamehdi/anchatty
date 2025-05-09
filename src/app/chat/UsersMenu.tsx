@@ -62,7 +62,7 @@ export default function UsersMenu({loggedInUser, onClose, onChannelSelected}: Re
         try {
             const response = await client.queryUsers({
                 $and: [
-                    {id: {$ne: loggedInUser.id}},
+                    {id: {$in: users?.map(user => user.id).filter(id => id !== loggedInUser.id) || []}},
                     searchInput ? {
                         $or: [{
                             name: {$autocomplete: searchInput},
